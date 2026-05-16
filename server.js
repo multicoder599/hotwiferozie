@@ -9,12 +9,14 @@ const path = require('path');
 const fs = require('fs');
 require('dotenv').config();
 
+// Fixed: Only declared once
 const app = express();
+
 app.use(cors({
-        origin: ['https://hotwiferozie.com', 'https://www.hotwiferozie.com'],
-        methods: ['GET', 'POST', 'PUT', 'DELETE'],
-        credentials: true
-    }));
+    origin: ['https://hotwiferozie.com', 'https://www.hotwiferozie.com'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true
+}));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
@@ -106,11 +108,10 @@ const authAdmin = async (req, res, next) => {
 
 // ================= CONNECT DB =================
 
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/hotwiferozie', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-}).then(() => console.log('MongoDB connected'))
-  .catch(err => console.error('MongoDB error:', err));
+// Fixed: Removed the deprecated useNewUrlParser and useUnifiedTopology options
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/hotwiferozie')
+  .then(() => console.log('MongoDB connected successfully!'))
+  .catch(err => console.error('MongoDB connection error:', err));
 
 // ================= PUBLIC API: PROFILES =================
 
