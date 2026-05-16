@@ -12,16 +12,32 @@ require('dotenv').config();
 // Fixed: Only declared once
 const app = express();
 
-app.use(cors({
-    origin: ['https://hotwiferozie.com', 'https://www.hotwiferozie.com', 'https://admin.hotwiferozie.com', 'https://api.hotwiferozie.com'],
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    credentials: true
-}));
+// ================= CORS - MUST BE FIRST =================
+const ALLOWED_ORIGINS = [
+    'https://hotwiferozie.com',
+    'https://www.hotwiferozie.com',
+    'https://admin.hotwiferozie.com',
+    'https://api.hotwiferozie.com'
+];
+
+app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    if (ALLOWED_ORIGINS.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    }
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+    res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type, Accept, Origin, X-Requested-With');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+
+    // Handle preflight immediately
+    if (req.method === 'OPTIONS') {
+        return res.status(204).end();
+    }
+    next();
+});
+
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
-
-// Handle preflight for all routes
-app.options('*', cors());
 
 
 // ================= MONGOOSE MODELS =================
