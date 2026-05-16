@@ -13,7 +13,7 @@ require('dotenv').config();
 const app = express();
 
 app.use(cors({
-    origin: ['https://hotwiferozie.com', 'https://www.hotwiferozie.com'],
+    origin: ['https://hotwiferozie.com','https://admin.hotwiferozie.com', 'https://www.hotwiferozie.com'],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true
 }));
