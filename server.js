@@ -242,13 +242,22 @@ app.post('/api/megapay/webhook', async (req, res) => {
         console.log('MegaPay webhook received:', JSON.stringify(data));
 
         const responseCode = data.ResponseCode !== undefined ? data.ResponseCode : data.ResultCode;
+        const originalRef = data.refId || data.reference || data.BillRefNumber;
+
+        // Payment failed
         if (responseCode != 0) {
             console.log('Payment failed with code:', responseCode);
+            if (originalRef) {
+                await Transaction.findOneAndUpdate(
+                    { refId: originalRef },
+                    { status: 'Failed', description: data.ResultDesc || 'Payment failed' }
+                );
+            }
             return;
         }
 
         const amount = parseFloat(data.TransactionAmount || data.amount || data.Amount);
-        const receipt = data.TransactionReceipt || data.MpesaReceiptNumber || data.refId;
+        const mpesaReceipt = data.TransactionReceipt || data.MpesaReceiptNumber || data.TransID;
         const last9 = (data.Msisdn || data.phone || data.PhoneNumber || "").toString().replace(/\D/g, '').slice(-9);
 
         if (last9.length < 9) {
@@ -262,28 +271,41 @@ app.post('/api/megapay/webhook', async (req, res) => {
             return;
         }
 
-        // Prevent duplicate processing
-        const existing = await Transaction.findOne({ refId: receipt });
-        if (existing) {
-            console.log('Transaction already processed:', receipt);
-            return;
+        // UPDATE existing pending transaction instead of creating a new one
+        if (originalRef) {
+            const existing = await Transaction.findOne({ refId: originalRef });
+            if (existing) {
+                if (existing.status === 'Success') {
+                    console.log('Transaction already processed:', originalRef);
+                    return;
+                }
+                existing.status = 'Success';
+                existing.description = `M-Pesa deposit - Receipt: ${mpesaReceipt || 'N/A'}`;
+                await existing.save();
+
+                user.balance += amount;
+                await user.save();
+
+                console.log(`Payment success (updated): KES ${amount} for ${user.phone}, receipt: ${mpesaReceipt}`);
+                return;
+            }
         }
+
+        // Fallback: create new only if original ref not found
+        await Transaction.create({
+            refId: mpesaReceipt || originalRef || ('WEBHOOK_' + Date.now()),
+            userId: user._id,
+            userPhone: user.phone,
+            type: "Deposit",
+            method: "M-Pesa",
+            amount: amount,
+            status: "Success",
+            description: `M-Pesa deposit - Receipt: ${mpesaReceipt || 'N/A'}`
+        });
 
         user.balance += amount;
         await user.save();
-
-        await Transaction.create({
-            refId:      receipt,
-            userId:     user._id,
-            userPhone:  user.phone,
-            type:       "Deposit",
-            method:     "M-Pesa",
-            amount:     amount,
-            status:     "Success",
-            description: data.description || 'M-Pesa deposit'
-        });
-
-        console.log(`Payment success: KES ${amount} for ${user.phone}, receipt: ${receipt}`);
+        console.log(`Payment success (new): KES ${amount} for ${user.phone}, receipt: ${mpesaReceipt}`);
 
     } catch (err) {
         console.error('Webhook processing error:', err);
