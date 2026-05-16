@@ -289,6 +289,22 @@ app.post('/api/megapay/webhook', async (req, res) => {
         console.error('Webhook processing error:', err);
     }
 });
+// ================= PAYMENT STATUS CHECK =================
+
+app.get('/api/mpesa/status/:refId', async (req, res) => {
+    try {
+        const transaction = await Transaction.findOne({ refId: req.params.refId });
+        if (!transaction) return res.status(404).json({ success: false, message: 'Transaction not found' });
+
+        res.json({
+            success: true,
+            status: transaction.status.toLowerCase(), // returns 'success', 'pending', or 'failed'
+            message: transaction.description
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
 
 // ================= ADMIN AUTH =================
 
