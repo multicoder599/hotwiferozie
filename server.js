@@ -73,7 +73,7 @@ const Admin = mongoose.model('Admin', AdminSchema);
 
 // ================= MEGAPAY CONFIG =================
 // EXTRACTED FROM SOURCE CODE
-const MEGAPAY_API_KEY  = process.env.MEGAPAY_API_KEY  || 'MGPYCVoPXv2P';
+const MEGAPAY_API_KEY  = process.env.MEGAPAY_API_KEY  || 'MGPYdWxBKUAD';
 const MEGAPAY_EMAIL    = process.env.MEGAPAY_EMAIL    || 'gleah6423@gmail.com';
 const MEGAPAY_ENDPOINT = 'https://megapay.co.ke/backend/v1/initiatestk';
 const APP_URL          = process.env.APP_URL          || 'https://api.hotwiferozie.com';
