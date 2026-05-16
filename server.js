@@ -13,12 +13,16 @@ require('dotenv').config();
 const app = express();
 
 app.use(cors({
-    origin: ['https://hotwiferozie.com','https://admin.hotwiferozie.com', 'https://www.hotwiferozie.com'],
+    origin: ['https://hotwiferozie.com', 'https://www.hotwiferozie.com', 'https://admin.hotwiferozie.com', 'https://api.hotwiferozie.com'],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true
 }));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// Handle preflight for all routes
+app.options('*', cors());
+
 
 // ================= MONGOOSE MODELS =================
 
@@ -347,12 +351,42 @@ app.post('/api/admin/login', async (req, res) => {
 });
 
 app.post('/api/admin/setup', async (req, res) => {
-    // One-time setup endpoint - remove in production after creating admin
+    // One-time setup endpoint — blocked after first admin exists
     try {
+        const existing = await Admin.countDocuments();
+        if (existing > 0) {
+            return res.status(403).json({ success: false, message: 'Admin already exists. Setup disabled.' });
+        }
         const { username, password } = req.body;
+        if (!username || !password || password.length < 8) {
+            return res.status(400).json({ success: false, message: 'Username required and password must be 8+ characters.' });
+        }
         const hashed = await bcrypt.hash(password, 10);
         const admin = await Admin.create({ username, password: hashed });
         res.json({ success: true, message: 'Admin created', adminId: admin._id });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+
+// ================= ADMIN PASSWORD CHANGE =================
+
+app.put('/api/admin/password', authAdmin, async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        if (!currentPassword || !newPassword || newPassword.length < 8) {
+            return res.status(400).json({ success: false, message: 'Current password required. New password must be 8+ characters.' });
+        }
+        const admin = await Admin.findById(req.admin.id);
+        if (!admin) return res.status(404).json({ success: false, message: 'Admin not found' });
+
+        const isMatch = await bcrypt.compare(currentPassword, admin.password);
+        if (!isMatch) return res.status(401).json({ success: false, message: 'Current password is incorrect' });
+
+        admin.password = await bcrypt.hash(newPassword, 10);
+        await admin.save();
+        res.json({ success: true, message: 'Password updated successfully' });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
