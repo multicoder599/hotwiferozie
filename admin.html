@@ -67,7 +67,7 @@
 
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 2000; }
         .modal-overlay.active { display: flex; }
-        .modal-box { background: var(--card); padding: 30px; border-radius: 16px; width: 100%; max-width: 500px; border: 1px solid var(--border); max-height: 90vh; overflow-y: auto; }
+        .modal-box { background: var(--card); padding: 30px; border-radius: 16px; width: 100%; max-width: 700px; border: 1px solid var(--border); max-height: 90vh; overflow-y: auto; }
         .modal-box h3 { margin-bottom: 20px; font-size: 20px; }
         .form-group { margin-bottom: 16px; }
         .form-group label { display: block; font-size: 12px; color: var(--muted); font-weight: 700; text-transform: uppercase; margin-bottom: 6px; }
@@ -88,6 +88,8 @@
         .toast.show { transform: translateY(0); }
         .toast-success { background: var(--green); color: #FFF; }
         .toast-error { background: var(--red); color: #FFF; }
+
+        .attr-section-title { font-size: 14px; color: var(--gold); text-transform: uppercase; letter-spacing: 0.05em; margin: 20px 0 12px; display: flex; align-items: center; gap: 8px; }
 
         @media (max-width: 768px) {
             .sidebar { width: 100%; height: auto; position: relative; }
@@ -194,9 +196,11 @@
             <!-- ADD / EDIT PROFILE -->
             <div class="section" id="add">
                 <h3 id="formTitle">Add New Listing</h3>
-                <div class="modal-box" style="max-width: 700px; margin: 0;">
+                <div class="modal-box" style="margin: 0;">
                     <form id="profileForm" onsubmit="saveProfile(event)">
                         <input type="hidden" id="editId" />
+
+                        <!-- BASIC INFO -->
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                             <div class="form-group">
                                 <label>Name / Alias</label>
@@ -238,7 +242,9 @@
                             <textarea id="pBio" required placeholder="Write an alluring description..."></textarea>
                         </div>
 
-                        <!-- NEW: Physical Attributes -->
+                        <!-- PHYSICAL ATTRIBUTES -->
+                        <div class="attr-section-title"><i class="fas fa-ruler"></i> Physical Attributes</div>
+                        
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                             <div class="form-group">
                                 <label>Hair</label>
@@ -514,7 +520,7 @@
             formData.append('bio', document.getElementById('pBio').value);
             formData.append('price', document.getElementById('pPrice').value);
 
-            // NEW: Physical attributes
+            // PHYSICAL ATTRIBUTES
             formData.append('hair', document.getElementById('pHair').value);
             formData.append('faceCard', document.getElementById('pFaceCard').value);
             formData.append('skinTone', document.getElementById('pSkinTone').value);
@@ -574,7 +580,7 @@
             document.getElementById('pBio').value = p.bio;
             document.getElementById('pPrice').value = p.price || 499;
 
-            // NEW: Physical attributes
+            // PHYSICAL ATTRIBUTES
             document.getElementById('pHair').value = p.hair || '';
             document.getElementById('pFaceCard').value = p.faceCard || '';
             document.getElementById('pSkinTone').value = p.skinTone || '';
