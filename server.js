@@ -180,7 +180,7 @@ app.post('/api/deposit', async (req, res) => {
         const parsedAmount = parseFloat(amount);
 
         if (!userPhone) return res.status(400).json({ success: false, message: 'Phone number is required.' });
-        if (isNaN(parsedAmount) || parsedAmount < 10) return res.status(400).json({ success: false, message: 'Minimum amount is KES 10.' });
+        if (isNaN(parsedAmount) || parsedAmount < 499) return res.status(400).json({ success: false, message: 'Minimum amount is KES 499.' });
 
         // Find or create user
         let user = await User.findOne({ phone: userPhone });
