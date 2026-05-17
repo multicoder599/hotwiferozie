@@ -357,6 +357,14 @@
             if (id === 'profiles') loadProfiles();
         }
 
+        function adminImageUrl(url) {
+            if (!url) return 'https://via.placeholder.com/48';
+            if (url.startsWith('http')) return url;
+            if (url.startsWith('/uploads/')) return API_BASE + url;
+            if (url.startsWith('/')) return API_BASE + url;
+            return url;
+        }
+
         async function loadDashboard() {
             try {
                 const res = await fetch(`${API_BASE}/api/admin/stats`, {
@@ -396,7 +404,7 @@
             }
             tbody.innerHTML = profiles.map(p => `
                 <tr>
-                    <td><img src="${p.image || 'https://via.placeholder.com/48'}" class="profile-img" onerror="this.src='https://via.placeholder.com/48'" /></td>
+                    <td><img src="${adminImageUrl(p.image)}" class="profile-img" onerror="this.src='https://via.placeholder.com/48'" /></td>
                     <td><strong>${p.name}</strong><br><small style="color:var(--muted)">${p.gender}</small></td>
                     <td>${p.age}</td>
                     <td>${p.location}<br><small style="color:var(--muted)">${p.county}</small></td>
@@ -491,7 +499,7 @@
 
             if (p.image) {
                 const img = document.getElementById('adminImgPreview');
-                img.src = p.image;
+                img.src = adminImageUrl(p.image);
                 img.style.display = 'block';
             }
 
