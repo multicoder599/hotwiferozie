@@ -56,7 +56,19 @@ const ProfileSchema = new mongoose.Schema({
     isVerified: { type: Boolean, default: true },
     price:      { type: Number, default: 499 },
     createdAt:  { type: Date, default: Date.now },
-    active:     { type: Boolean, default: true }
+    active:     { type: Boolean, default: true },
+
+    // NEW: Physical attributes
+    hair:       { type: String, default: '' },
+    faceCard:   { type: String, default: '' },
+    skinTone:   { type: String, default: '' },
+    bodyType:   { type: String, default: '' },
+    breast:     { type: String, default: '' },
+    waist:      { type: String, default: '' },
+    thighs:     { type: String, default: '' },
+    butt:       { type: String, default: '' },
+    piercings:  { type: String, default: '' },
+    tattoos:    { type: String, default: '' }
 });
 
 const UserSchema = new mongoose.Schema({

@@ -194,7 +194,7 @@
             <!-- ADD / EDIT PROFILE -->
             <div class="section" id="add">
                 <h3 id="formTitle">Add New Listing</h3>
-                <div class="modal-box" style="max-width: 600px; margin: 0;">
+                <div class="modal-box" style="max-width: 700px; margin: 0;">
                     <form id="profileForm" onsubmit="saveProfile(event)">
                         <input type="hidden" id="editId" />
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
@@ -237,6 +237,71 @@
                             <label>Bio / Description</label>
                             <textarea id="pBio" required placeholder="Write an alluring description..."></textarea>
                         </div>
+
+                        <!-- NEW: Physical Attributes -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <div class="form-group">
+                                <label>Hair</label>
+                                <input type="text" id="pHair" placeholder="e.g. Long Black, Blonde Braids" />
+                            </div>
+                            <div class="form-group">
+                                <label>Face Card</label>
+                                <input type="text" id="pFaceCard" placeholder="e.g. Pretty, Model, Cute" />
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <div class="form-group">
+                                <label>Skin Tone</label>
+                                <select id="pSkinTone">
+                                    <option value="">Select</option>
+                                    <option>Light</option>
+                                    <option>Medium</option>
+                                    <option>Dark</option>
+                                    <option>Ebony</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Body Type / Built</label>
+                                <select id="pBodyType">
+                                    <option value="">Select</option>
+                                    <option>Slim</option>
+                                    <option>Curvy</option>
+                                    <option>Athletic</option>
+                                    <option>Petite</option>
+                                    <option>BBW</option>
+                                    <option>Thick</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+                            <div class="form-group">
+                                <label>Breast</label>
+                                <input type="text" id="pBreast" placeholder="e.g. 34C" />
+                            </div>
+                            <div class="form-group">
+                                <label>Waist</label>
+                                <input type="text" id="pWaist" placeholder='e.g. 28"' />
+                            </div>
+                            <div class="form-group">
+                                <label>Thighs</label>
+                                <input type="text" id="pThighs" placeholder="e.g. Thick, Toned" />
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <div class="form-group">
+                                <label>Butt / Lower Body</label>
+                                <input type="text" id="pButt" placeholder="e.g. Bubble, Peachy" />
+                            </div>
+                            <div class="form-group">
+                                <label>Piercings</label>
+                                <input type="text" id="pPiercings" placeholder="e.g. Ears, Navel, Nose" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Tattoos</label>
+                            <input type="text" id="pTattoos" placeholder="e.g. Arm sleeve, Back piece, None" />
+                        </div>
+
                         <div class="form-group">
                             <label>Unlock Price (KES)</label>
                             <input type="number" id="pPrice" value="499" min="10" required />
@@ -449,6 +514,18 @@
             formData.append('bio', document.getElementById('pBio').value);
             formData.append('price', document.getElementById('pPrice').value);
 
+            // NEW: Physical attributes
+            formData.append('hair', document.getElementById('pHair').value);
+            formData.append('faceCard', document.getElementById('pFaceCard').value);
+            formData.append('skinTone', document.getElementById('pSkinTone').value);
+            formData.append('bodyType', document.getElementById('pBodyType').value);
+            formData.append('breast', document.getElementById('pBreast').value);
+            formData.append('waist', document.getElementById('pWaist').value);
+            formData.append('thighs', document.getElementById('pThighs').value);
+            formData.append('butt', document.getElementById('pButt').value);
+            formData.append('piercings', document.getElementById('pPiercings').value);
+            formData.append('tattoos', document.getElementById('pTattoos').value);
+
             const imgFile = document.getElementById('pImage').files[0];
             if (imgFile) formData.append('image', imgFile);
 
@@ -496,6 +573,18 @@
             document.getElementById('pPhone').value = p.phone;
             document.getElementById('pBio').value = p.bio;
             document.getElementById('pPrice').value = p.price || 499;
+
+            // NEW: Physical attributes
+            document.getElementById('pHair').value = p.hair || '';
+            document.getElementById('pFaceCard').value = p.faceCard || '';
+            document.getElementById('pSkinTone').value = p.skinTone || '';
+            document.getElementById('pBodyType').value = p.bodyType || '';
+            document.getElementById('pBreast').value = p.breast || '';
+            document.getElementById('pWaist').value = p.waist || '';
+            document.getElementById('pThighs').value = p.thighs || '';
+            document.getElementById('pButt').value = p.butt || '';
+            document.getElementById('pPiercings').value = p.piercings || '';
+            document.getElementById('pTattoos').value = p.tattoos || '';
 
             if (p.image) {
                 const img = document.getElementById('adminImgPreview');
