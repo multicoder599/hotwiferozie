@@ -54,7 +54,7 @@ const ProfileSchema = new mongoose.Schema({
     isPremium:  { type: Boolean, default: false },
     isOnline:   { type: Boolean, default: false },
     isVerified: { type: Boolean, default: true },
-    price:      { type: Number, default: 299 },
+    price:      { type: Number, default: 499 },
     createdAt:  { type: Date, default: Date.now },
     active:     { type: Boolean, default: true }
 });
