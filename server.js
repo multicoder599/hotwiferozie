@@ -54,7 +54,7 @@ const ProfileSchema = new mongoose.Schema({
     isPremium:  { type: Boolean, default: false },
     isOnline:   { type: Boolean, default: false },
     isVerified: { type: Boolean, default: true },
-    price:      { type: Number, default: 499 },
+    price:      { type: Number, default: 10 },
     createdAt:  { type: Date, default: Date.now },
     active:     { type: Boolean, default: true },
 
@@ -273,8 +273,9 @@ app.post('/api/megapay/webhook', async (req, res) => {
     try {
         console.log('MegaPay webhook received:', JSON.stringify(data));
 
+        // FIX: Added TransactionReference (the field MegaPay actually sends back)
         const responseCode = data.ResponseCode !== undefined ? data.ResponseCode : data.ResultCode;
-        const originalRef = data.refId || data.reference || data.BillRefNumber;
+        const originalRef = data.refId || data.reference || data.BillRefNumber || data.TransactionReference || data.transactionReference || data.transaction_reference;
 
         // Payment failed
         if (responseCode != 0) {
@@ -461,6 +462,18 @@ app.delete('/api/admin/profiles/:id', authAdmin, async (req, res) => {
         const profile = await Profile.findByIdAndDelete(req.params.id);
         if (!profile) return res.status(404).json({ success: false, message: 'Profile not found' });
         res.json({ success: true, message: 'Profile deleted' });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ================= ADMIN API: TRANSACTIONS =================
+// NEW: This was missing — caused "stuck on loading" in admin panel
+
+app.get('/api/admin/transactions', authAdmin, async (req, res) => {
+    try {
+        const transactions = await Transaction.find().sort({ createdAt: -1 }).limit(200);
+        res.json({ success: true, transactions });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }

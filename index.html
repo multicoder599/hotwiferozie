@@ -310,7 +310,7 @@
 
                         <div class="form-group">
                             <label>Unlock Price (KES)</label>
-                            <input type="number" id="pPrice" value="499" min="10" required />
+                            <input type="number" id="pPrice" value="10" min="10" required />
                         </div>
                         <div class="form-group">
                             <label>Profile Photo</label>
@@ -371,7 +371,7 @@
         let authToken = localStorage.getItem('adminToken') || '';
         let profilesList = [];
         let deleteTargetId = null;
-
+    
         // Auto-login if token exists
         if (authToken) {
             document.getElementById('loginScreen').style.display = 'none';
@@ -379,12 +379,12 @@
             loadDashboard();
             loadProfiles();
         }
-
+    
         async function login() {
             const username = document.getElementById('adminUser').value;
             const password = document.getElementById('adminPass').value;
             if (!username || !password) return showToast('Please enter credentials', 'error');
-
+    
             try {
                 const res = await fetch(`${API_BASE}/api/admin/login`, {
                     method: 'POST',
@@ -392,7 +392,7 @@
                     body: JSON.stringify({ username, password })
                 });
                 const data = await res.json();
-
+    
                 if (data.success) {
                     authToken = data.token;
                     localStorage.setItem('adminToken', authToken);
@@ -408,26 +408,27 @@
                 showToast('Login failed. Check server connection.', 'error');
             }
         }
-
+    
         function logout() {
             localStorage.removeItem('adminToken');
             authToken = '';
             location.reload();
         }
-
+    
         function showSection(id, navEl) {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
             if (navEl) navEl.classList.add('active');
-
+    
             const titles = { dashboard: 'Dashboard', profiles: 'All Profiles', add: 'Add Listing', transactions: 'Transactions' };
             document.getElementById('pageTitle').innerText = titles[id] || 'Admin';
-
+    
             if (id === 'dashboard') loadDashboard();
             if (id === 'profiles') loadProfiles();
+            if (id === 'transactions') loadTransactions();   // <-- LOADS TRANSACTIONS
         }
-
+    
         function adminImageUrl(url) {
             if (!url) return 'https://via.placeholder.com/48';
             if (url.startsWith('http')) return url;
@@ -435,7 +436,7 @@
             if (url.startsWith('/')) return API_BASE + url;
             return url;
         }
-
+    
         async function loadDashboard() {
             try {
                 const res = await fetch(`${API_BASE}/api/admin/stats`, {
@@ -450,7 +451,7 @@
                 }
             } catch (err) { console.error('Stats error:', err); }
         }
-
+    
         async function loadProfiles() {
             try {
                 const res = await fetch(`${API_BASE}/api/admin/profiles`, {
@@ -466,7 +467,7 @@
                 document.getElementById('profilesTable').innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted)">Failed to load profiles</td></tr>';
             }
         }
-
+    
         function renderProfilesTable(profiles) {
             const tbody = document.getElementById('profilesTable');
             if (!profiles.length) {
@@ -479,7 +480,7 @@
                     <td><strong>${p.name}</strong><br><small style="color:var(--muted)">${p.gender}</small></td>
                     <td>${p.age}</td>
                     <td>${p.location}<br><small style="color:var(--muted)">${p.county}</small></td>
-                    <td>KES ${p.price || 499}</td>
+                    <td>KES ${p.price || 10}</td>
                     <td>
                         ${p.active ? '<span class="badge badge-green">Active</span>' : '<span class="badge badge-red">Inactive</span>'}
                         ${p.isPremium ? '<span class="badge badge-gold">VIP</span>' : ''}
@@ -493,7 +494,47 @@
                 </tr>
             `).join('');
         }
-
+    
+        // ================= TRANSACTIONS =================
+        async function loadTransactions() {
+            try {
+                const res = await fetch(`${API_BASE}/api/admin/transactions`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    renderTransactionsTable(data.transactions);
+                } else {
+                    document.getElementById('transactionsTable').innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:40px;">No transactions found.</td></tr>';
+                }
+            } catch (err) { 
+                console.error('Load transactions error:', err);
+                document.getElementById('transactionsTable').innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:40px;">Failed to load transactions.</td></tr>';
+            }
+        }
+    
+        function renderTransactionsTable(transactions) {
+            const tbody = document.getElementById('transactionsTable');
+            if (!transactions || !transactions.length) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:40px;">No transactions yet.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = transactions.map(t => `
+                <tr>
+                    <td><code style="font-size:12px;background:rgba(255,255,255,0.05);padding:2px 6px;border-radius:4px;">${t.refId}</code></td>
+                    <td>${t.userPhone || '-'}</td>
+                    <td>${t.type}</td>
+                    <td><strong>KES ${t.amount?.toLocaleString() || 0}</strong></td>
+                    <td>
+                        ${t.status === 'Success' ? '<span class="badge badge-green">Success</span>' : 
+                          t.status === 'Failed' ? '<span class="badge badge-red">Failed</span>' : 
+                          '<span class="badge badge-gold">Pending</span>'}
+                    </td>
+                    <td style="font-size:12px;color:var(--muted);">${new Date(t.createdAt).toLocaleString()}</td>
+                </tr>
+            `).join('');
+        }
+    
         function previewAdminImage(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -505,12 +546,12 @@
             };
             reader.readAsDataURL(file);
         }
-
+    
         async function saveProfile(e) {
             e.preventDefault();
             const editId = document.getElementById('editId').value;
             const formData = new FormData();
-
+    
             formData.append('name', document.getElementById('pName').value);
             formData.append('age', document.getElementById('pAge').value);
             formData.append('gender', document.getElementById('pGender').value);
@@ -519,7 +560,7 @@
             formData.append('phone', document.getElementById('pPhone').value);
             formData.append('bio', document.getElementById('pBio').value);
             formData.append('price', document.getElementById('pPrice').value);
-
+    
             // PHYSICAL ATTRIBUTES
             formData.append('hair', document.getElementById('pHair').value);
             formData.append('faceCard', document.getElementById('pFaceCard').value);
@@ -531,15 +572,15 @@
             formData.append('butt', document.getElementById('pButt').value);
             formData.append('piercings', document.getElementById('pPiercings').value);
             formData.append('tattoos', document.getElementById('pTattoos').value);
-
+    
             const imgFile = document.getElementById('pImage').files[0];
             if (imgFile) formData.append('image', imgFile);
-
+    
             const url = editId 
                 ? `${API_BASE}/api/admin/profiles/${editId}`
                 : `${API_BASE}/api/admin/profiles`;
             const method = editId ? 'PUT' : 'POST';
-
+    
             try {
                 const res = await fetch(url, {
                     method,
@@ -547,7 +588,7 @@
                     body: formData
                 });
                 const data = await res.json();
-
+    
                 if (data.success) {
                     showToast(editId ? 'Profile updated!' : 'Profile added!', 'success');
                     document.getElementById('profileForm').reset();
@@ -565,11 +606,11 @@
                 showToast('Server error. Please try again.', 'error');
             }
         }
-
+    
         function editProfile(id) {
             const p = profilesList.find(x => x._id === id);
             if (!p) return;
-
+    
             document.getElementById('editId').value = p._id;
             document.getElementById('pName').value = p.name;
             document.getElementById('pAge').value = p.age;
@@ -578,8 +619,8 @@
             document.getElementById('pLocation').value = p.location;
             document.getElementById('pPhone').value = p.phone;
             document.getElementById('pBio').value = p.bio;
-            document.getElementById('pPrice').value = p.price || 499;
-
+            document.getElementById('pPrice').value = p.price || 10;
+    
             // PHYSICAL ATTRIBUTES
             document.getElementById('pHair').value = p.hair || '';
             document.getElementById('pFaceCard').value = p.faceCard || '';
@@ -591,18 +632,18 @@
             document.getElementById('pButt').value = p.butt || '';
             document.getElementById('pPiercings').value = p.piercings || '';
             document.getElementById('pTattoos').value = p.tattoos || '';
-
+    
             if (p.image) {
                 const img = document.getElementById('adminImgPreview');
                 img.src = adminImageUrl(p.image);
                 img.style.display = 'block';
             }
-
+    
             document.getElementById('formTitle').innerText = 'Edit Listing';
             document.getElementById('saveBtnText').innerText = 'Update Listing';
             showSection('add', document.querySelectorAll('.nav-link')[2]);
         }
-
+    
         function cancelEdit() {
             document.getElementById('profileForm').reset();
             document.getElementById('editId').value = '';
@@ -610,17 +651,17 @@
             document.getElementById('formTitle').innerText = 'Add New Listing';
             document.getElementById('saveBtnText').innerText = 'Save Listing';
         }
-
+    
         function promptDelete(id) {
             deleteTargetId = id;
             document.getElementById('deleteModal').classList.add('active');
         }
-
+    
         function closeDeleteModal() {
             deleteTargetId = null;
             document.getElementById('deleteModal').classList.remove('active');
         }
-
+    
         async function confirmDelete() {
             if (!deleteTargetId) return;
             try {
@@ -629,7 +670,7 @@
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 });
                 const data = await res.json();
-
+    
                 if (data.success) {
                     showToast('Profile deleted', 'success');
                     closeDeleteModal();
@@ -642,14 +683,14 @@
                 showToast('Server error during delete', 'error');
             }
         }
-
+    
         function showToast(msg, type) {
             const toast = document.getElementById('toast');
             toast.innerText = msg;
             toast.className = `toast toast-${type} show`;
             setTimeout(() => toast.classList.remove('show'), 3000);
         }
-
+    
         // Enter key on login
         document.getElementById('adminPass').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') login();
